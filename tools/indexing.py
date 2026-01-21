@@ -42,7 +42,8 @@ async def call_llm(prompt: str, ctx: Context) -> str:
         model=LLM_MODEL,
         messages=[{"role": "user", "content": prompt}],
     )
-    return response.choices[0].message.content.strip()
+    content = response.choices[0].message.content
+    return (content or "").strip()
 
 
 async def summarize_text(text: str, page_num: int, ctx: Context) -> dict:

@@ -1,53 +1,76 @@
+<div align="center">
+
 # PageIndex Light MCP
 
-PDF 索引 MCP 服务，基于 FastMCP v3 构建。
+[![Python](https://img.shields.io/badge/Python-3.10+-3776AB?style=flat-square&logo=python&logoColor=white)](https://python.org)
+[![FastMCP](https://img.shields.io/badge/FastMCP-v3-00ADD8?style=flat-square)](https://github.com/jlowin/fastmcp)
+[![MCP](https://img.shields.io/badge/MCP-Compatible-8A2BE2?style=flat-square)](https://modelcontextprotocol.io)
+[![License](https://img.shields.io/badge/License-MIT-green?style=flat-square)](LICENSE)
 
-## 功能特性
+**Lightweight implementation of [PageIndex](https://github.com/VectifyAI/PageIndex) — Agentic PDF Search via MCP**
 
-- **MCP Sampling** - 默认使用 MCP 协议的 Sampling 能力
-- **LLM Fallback** - 不支持 Sampling 的客户端自动回退到 OpenAI 兼容 API
-- **OCR Fallback** - 扫描版 PDF 自动调用 OCR 服务提取文本
+*Vectorless, reasoning-based document retrieval that thinks like a human*
 
-## 环境变量
+</div>
 
-```bash
-# LLM 配置 (Sampling 不可用时的 Fallback)
-PAGEINDEX_LLM_BASE_URL=https://api.openai.com/v1
-PAGEINDEX_LLM_API_KEY=sk-xxx
-PAGEINDEX_LLM_MODEL=gpt-4o-mini
+---
 
-# OCR 配置 (文本提取失败时的 Fallback)
-PAGEINDEX_OCR_BASE_URL=https://api.xxx.com/v1
-PAGEINDEX_OCR_API_KEY=sk-xxx
-PAGEINDEX_OCR_MODEL=ocr-model
-```
+## Overview
 
-## MCP 配置
+PageIndex Light MCP brings **agentic search** capabilities to your PDF documents through the Model Context Protocol. Instead of traditional vector similarity, it leverages LLM reasoning for intelligent, human-like document navigation.
 
-`claude_desktop_config.json`:
+Inspired by [VectifyAI/PageIndex](https://github.com/VectifyAI/PageIndex) and [pageindex-mcp](https://github.com/VectifyAI/pageindex-mcp).
+
+## Features
+
+- **Agentic Search** — LLM-powered semantic search through document structure
+- **MCP Sampling** — Native MCP protocol sampling support
+- **LLM Fallback** — Auto-fallback to OpenAI-compatible APIs for non-sampling clients
+- **OCR Fallback** — Automatic OCR for scanned PDFs
+
+## Tools
+
+| Tool | Description |
+|------|-------------|
+| `get_index` | Get PDF index with semantic search support |
+| `get_detail` | Retrieve detailed content of a specific page |
+
+## Quick Start
+
+### Claude Desktop / Claude Code
+
+Add to your MCP config:
 
 ```json
 {
   "mcpServers": {
     "pageindex": {
       "command": "uv",
-      "args": ["run", "--directory", "/path/to/Pgaeindex-Light", "server.py"],
+      "args": ["run", "--directory", "/path/to/pageindex-light-mcp", "python", "server.py"],
       "env": {
         "PAGEINDEX_LLM_BASE_URL": "https://api.openai.com/v1",
         "PAGEINDEX_LLM_API_KEY": "sk-xxx",
-        "PAGEINDEX_LLM_MODEL": "gpt-4o-mini",
-        "PAGEINDEX_OCR_BASE_URL": "https://api.xxx.com/v1",
-        "PAGEINDEX_OCR_API_KEY": "sk-xxx",
-        "PAGEINDEX_OCR_MODEL": "ocr-model"
+        "PAGEINDEX_LLM_MODEL": "gpt-4o-mini"
       }
     }
   }
 }
 ```
 
-## 使用方法
+### Environment Variables
 
-提供两个工具:
+```bash
+# LLM Config (Fallback when Sampling unavailable)
+PAGEINDEX_LLM_BASE_URL=https://api.openai.com/v1
+PAGEINDEX_LLM_API_KEY=sk-xxx
+PAGEINDEX_LLM_MODEL=gpt-4o-mini
 
-- `get_index` - 获取 PDF 索引，支持语义搜索
-- `get_detail` - 获取指定页面的详细内容
+# OCR Config (Fallback for scanned PDFs)
+PAGEINDEX_OCR_BASE_URL=https://api.xxx.com/v1
+PAGEINDEX_OCR_API_KEY=sk-xxx
+PAGEINDEX_OCR_MODEL=ocr-model
+```
+
+## License
+
+MIT

@@ -1,0 +1,16 @@
+{
+  "mcpServers": {
+    "pageindex": {
+      "type": "stdio",
+      "command": "uv",
+      "args": [
+        "run",
+        "--directory",
+        "/Users/chengjie/Projects/Pgaeindex-Light",
+        "python",
+        "server.py"
+      ],
+      "env": {}
+    }
+  }
+}

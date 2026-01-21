@@ -50,7 +50,10 @@ Add to your MCP config:
       "env": {
         "PAGEINDEX_LLM_BASE_URL": "https://api.openai.com/v1",
         "PAGEINDEX_LLM_API_KEY": "sk-xxx",
-        "PAGEINDEX_LLM_MODEL": "gpt-4o-mini"
+        "PAGEINDEX_LLM_MODEL": "gpt-4o-mini",
+        "PAGEINDEX_OCR_BASE_URL": "https://api.openai.com/v1",
+        "PAGEINDEX_OCR_API_KEY": "sk-xxx",
+        "PAGEINDEX_OCR_MODEL": "gpt-4o-mini"
       }
     }
   }
@@ -59,16 +62,23 @@ Add to your MCP config:
 
 ### Environment Variables
 
+Both configurations are **optional and independent**:
+
+| Variable | Purpose | Required |
+|----------|---------|----------|
+| `PAGEINDEX_LLM_*` | Fallback for non-Sampling MCP clients | Optional |
+| `PAGEINDEX_OCR_*` | Fallback for scanned PDFs (when text extraction fails) | Optional |
+
 ```bash
-# LLM Config (Fallback when Sampling unavailable)
+# LLM Config — Used when MCP client doesn't support Sampling
 PAGEINDEX_LLM_BASE_URL=https://api.openai.com/v1
 PAGEINDEX_LLM_API_KEY=sk-xxx
 PAGEINDEX_LLM_MODEL=gpt-4o-mini
 
-# OCR Config (Fallback for scanned PDFs)
-PAGEINDEX_OCR_BASE_URL=https://api.xxx.com/v1
+# OCR Config — Used when PDF text extraction returns empty/minimal content
+PAGEINDEX_OCR_BASE_URL=https://api.openai.com/v1
 PAGEINDEX_OCR_API_KEY=sk-xxx
-PAGEINDEX_OCR_MODEL=ocr-model
+PAGEINDEX_OCR_MODEL=gpt-4o-mini  # Any vision-capable model
 ```
 
 ## License

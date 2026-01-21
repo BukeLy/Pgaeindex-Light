@@ -46,7 +46,7 @@ Add to your MCP config:
   "mcpServers": {
     "pageindex": {
       "command": "uv",
-      "args": ["run", "--directory", "/path/to/pageindex-light-mcp", "python", "server.py"],
+      "args": ["run", "--directory", "/path/to/pageindex-light-mcp", "server.py"],
       "env": {
         "PAGEINDEX_LLM_BASE_URL": "https://api.openai.com/v1",
         "PAGEINDEX_LLM_API_KEY": "sk-xxx",

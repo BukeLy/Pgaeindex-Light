@@ -1,7 +1,23 @@
 [project]
-name = "pgaeindex-light"
+name = "pageindex-light"
 version = "0.1.0"
-description = "Add your description here"
+description = "PDF indexing MCP service with FastMCP v3"
 readme = "README.md"
 requires-python = ">=3.12"
-dependencies = []
+dependencies = [
+    "fastmcp>=3.0.0b1",
+    "pymupdf>=1.24.0",
+    "pillow>=10.0.0",
+    "httpx[socks]>=0.27,<1.0",
+    "deepseek-ocr>=0.3.0",
+]
+
+[tool.uv]
+prerelease = "allow"
+
+[tool.hatch.build.targets.wheel]
+packages = ["shared", "tools"]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"

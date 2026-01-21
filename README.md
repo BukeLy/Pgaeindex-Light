@@ -1,4 +1,4 @@
-# PageIndex Light
+# PageIndex Light MCP
 
 PDF 索引 MCP 服务，基于 FastMCP v3 构建。
 
@@ -35,7 +35,10 @@ PAGEINDEX_OCR_MODEL=ocr-model
       "env": {
         "PAGEINDEX_LLM_BASE_URL": "https://api.openai.com/v1",
         "PAGEINDEX_LLM_API_KEY": "sk-xxx",
-        "PAGEINDEX_LLM_MODEL": "gpt-4o-mini"
+        "PAGEINDEX_LLM_MODEL": "gpt-4o-mini",
+        "PAGEINDEX_OCR_BASE_URL": "https://api.xxx.com/v1",
+        "PAGEINDEX_OCR_API_KEY": "sk-xxx",
+        "PAGEINDEX_OCR_MODEL": "ocr-model"
       }
     }
   }

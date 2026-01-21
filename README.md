@@ -35,6 +35,46 @@ Inspired by [VectifyAI/PageIndex](https://github.com/VectifyAI/PageIndex) and [p
 | `get_index` | Get PDF index with semantic search support |
 | `get_detail` | Retrieve detailed content of a specific page |
 
+## How It Works
+
+```mermaid
+flowchart TB
+    subgraph Input
+        A[PDF File] --> B{Text Extraction}
+    end
+
+    subgraph TextExtraction["Text Extraction"]
+        B -->|Success| C[Raw Text]
+        B -->|Empty/Minimal| D{OCR Configured?}
+        D -->|Yes| E[Vision LLM OCR]
+        D -->|No| C
+        E --> C
+    end
+
+    subgraph Indexing
+        C --> F[LLM Summarization]
+        F -->|Per Page| G[Page Summaries]
+        G --> H[(Cached Index)]
+    end
+
+    subgraph Search["Agentic Search"]
+        I[User Query] --> J{Has Query?}
+        J -->|No| K[Return Full Index]
+        J -->|Yes| L[LLM Reasoning]
+        H --> L
+        L --> M[Ranked Results]
+    end
+
+    subgraph LLMProvider["LLM Provider"]
+        N{MCP Sampling?}
+        N -->|Supported| O[MCP Client LLM]
+        N -->|Not Supported| P[Fallback LLM API]
+    end
+
+    F -.-> N
+    L -.-> N
+```
+
 ## Quick Start
 
 ### Claude Desktop / Claude Code

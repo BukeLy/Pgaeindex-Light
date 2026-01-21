@@ -7,7 +7,7 @@
 [![MCP](https://img.shields.io/badge/MCP-Compatible-8A2BE2?style=flat-square)](https://modelcontextprotocol.io)
 [![License](https://img.shields.io/badge/License-MIT-green?style=flat-square)](LICENSE)
 
-**Lightweight implementation of [PageIndex](https://github.com/VectifyAI/PageIndex) — Agentic PDF Search via MCP**
+**Agentic PDF Search via MCP — Inspired by [PageIndex](https://github.com/VectifyAI/PageIndex)**
 
 *Vectorless, reasoning-based document retrieval that thinks like a human*
 

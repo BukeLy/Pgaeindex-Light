@@ -10,7 +10,14 @@
         "python",
         "server.py"
       ],
-      "env": {}
+      "env": {
+        "PAGEINDEX_LLM_BASE_URL": "https://api.siliconflow.cn/v1",
+        "PAGEINDEX_LLM_API_KEY": "sk-cqzlbhgcpdrpjjixnirjkkdjdygbdhsdgiatgfaudmpeaafj",
+        "PAGEINDEX_LLM_MODEL": "Qwen/Qwen3-VL-30B-A3B-Instruct",
+        "PAGEINDEX_OCR_BASE_URL": "https://api.siliconflow.cn/v1",
+        "PAGEINDEX_OCR_API_KEY": "sk-cqzlbhgcpdrpjjixnirjkkdjdygbdhsdgiatgfaudmpeaafj",
+        "PAGEINDEX_OCR_MODEL": "Qwen/Qwen3-VL-30B-A3B-Instruct"
+      }
     }
   }
 }

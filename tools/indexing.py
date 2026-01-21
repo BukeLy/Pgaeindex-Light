@@ -17,7 +17,18 @@ from shared.pdf_utils import (
     save_index,
     get_total_pages,
 )
-from shared.config import LLM_BASE_URL, LLM_API_KEY, LLM_MODEL, is_llm_configured
+import os
+# 动态读取环境变量
+def get_llm_config():
+    return (
+        os.environ.get("PAGEINDEX_LLM_BASE_URL", ""),
+        os.environ.get("PAGEINDEX_LLM_API_KEY", ""),
+        os.environ.get("PAGEINDEX_LLM_MODEL", "gpt-4o-mini"),
+    )
+
+def is_llm_configured():
+    base_url, api_key, _ = get_llm_config()
+    return bool(base_url and api_key)
 
 # 并发锁：防止同一文件被重复索引
 _indexing_locks: dict[str, Lock] = {}
@@ -37,9 +48,10 @@ async def call_llm(prompt: str, ctx: Context) -> str:
     if not is_llm_configured():
         raise RuntimeError("Sampling 不可用且 LLM 未配置")
 
-    client = AsyncOpenAI(base_url=LLM_BASE_URL, api_key=LLM_API_KEY)
+    base_url, api_key, model = get_llm_config()
+    client = AsyncOpenAI(base_url=base_url, api_key=api_key)
     response = await client.chat.completions.create(
-        model=LLM_MODEL,
+        model=model,
         messages=[{"role": "user", "content": prompt}],
     )
     content = response.choices[0].message.content

@@ -3,8 +3,22 @@ import fitz  # pymupdf
 import hashlib
 import json
 import base64
+import os
 
-from shared.config import INDEX_DIR, OCR_BASE_URL, OCR_API_KEY, OCR_MODEL, is_ocr_configured
+from shared.config import INDEX_DIR
+
+
+def get_ocr_config():
+    return (
+        os.environ.get("PAGEINDEX_OCR_BASE_URL", ""),
+        os.environ.get("PAGEINDEX_OCR_API_KEY", ""),
+        os.environ.get("PAGEINDEX_OCR_MODEL", ""),
+    )
+
+
+def is_ocr_configured():
+    base_url, api_key, model = get_ocr_config()
+    return bool(base_url and api_key and model)
 
 
 def get_pdf_hash(pdf_path: Path) -> str:
@@ -53,9 +67,10 @@ async def ocr_page_image(pdf_path: Path, page_num: int) -> str:
         img_base64 = base64.b64encode(img_bytes).decode("utf-8")
 
         try:
-            client = openai.AsyncOpenAI(base_url=OCR_BASE_URL, api_key=OCR_API_KEY)
+            base_url, api_key, model = get_ocr_config()
+            client = openai.AsyncOpenAI(base_url=base_url, api_key=api_key)
             response = await client.chat.completions.create(
-                model=OCR_MODEL,
+                model=model,
                 messages=[
                     {
                         "role": "user",

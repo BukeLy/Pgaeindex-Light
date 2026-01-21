@@ -29,7 +29,8 @@ async def get_detail(
 
     for page_data in index_data.get("pages", []):
         if page_data.get("page") == page:
-            await ctx.debug(f"获取详情: {pdf_path.name} 第 {page} 页")
+            if ctx:
+                await ctx.debug(f"获取详情: {pdf_path.name} 第 {page} 页")
             return {
                 "file_path": str(pdf_path),
                 "page": page,

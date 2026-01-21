@@ -6,6 +6,8 @@ from asyncio import Lock
 import json
 import sys
 
+from openai import AsyncOpenAI
+
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from shared.pdf_utils import (
@@ -15,9 +17,45 @@ from shared.pdf_utils import (
     save_index,
     get_total_pages,
 )
+import os
+# 动态读取环境变量
+def get_llm_config():
+    return (
+        os.environ.get("PAGEINDEX_LLM_BASE_URL", ""),
+        os.environ.get("PAGEINDEX_LLM_API_KEY", ""),
+        os.environ.get("PAGEINDEX_LLM_MODEL", "gpt-4o-mini"),
+    )
+
+def is_llm_configured():
+    base_url, api_key, _ = get_llm_config()
+    return bool(base_url and api_key)
 
 # 并发锁：防止同一文件被重复索引
 _indexing_locks: dict[str, Lock] = {}
+
+
+async def call_llm(prompt: str, ctx: Context) -> str:
+    """调用 LLM：优先使用 Sampling，失败则 fallback 到 OpenAI SDK"""
+    # 尝试使用 MCP Sampling
+    if ctx:
+        try:
+            response = await ctx.sample(prompt)
+            return response.text.strip()
+        except Exception as e:
+            await ctx.debug(f"Sampling 失败: {e}")
+
+    # Fallback 到 OpenAI SDK
+    if not is_llm_configured():
+        raise RuntimeError("Sampling 不可用且 LLM 未配置")
+
+    base_url, api_key, model = get_llm_config()
+    client = AsyncOpenAI(base_url=base_url, api_key=api_key)
+    response = await client.chat.completions.create(
+        model=model,
+        messages=[{"role": "user", "content": prompt}],
+    )
+    content = response.choices[0].message.content
+    return (content or "").strip()
 
 
 async def summarize_text(text: str, page_num: int, ctx: Context) -> dict:
@@ -28,15 +66,14 @@ async def summarize_text(text: str, page_num: int, ctx: Context) -> dict:
     # 截断过长文本
     truncated = text[:3000] if len(text) > 3000 else text
 
-    response = await ctx.sample(
-        f"""请用1-2句话总结以下第{page_num}页的内容：
+    prompt = f"""请用1-2句话总结以下第{page_num}页的内容：
 
 {truncated}
 
 仅返回摘要文本，不要添加任何前缀或解释。"""
-    )
 
-    return {"page": page_num, "text": text, "summary": response.text.strip()}
+    summary = await call_llm(prompt, ctx)
+    return {"page": page_num, "text": text, "summary": summary}
 
 
 async def search_with_llm(
@@ -51,8 +88,7 @@ async def search_with_llm(
         ]
     )
 
-    response = await ctx.sample(
-        f"""根据用户查询，从以下页面摘要中找出最相关的页面。
+    prompt = f"""根据用户查询，从以下页面摘要中找出最相关的页面。
 
 用户查询: {query}
 
@@ -62,10 +98,11 @@ async def search_with_llm(
 请返回最相关的页码（最多{top_k}个），按相关性排序。
 返回JSON格式：{{"results": [{{"page": 页码, "relevance": "相关原因"}}]}}
 仅返回JSON，不要其他内容。"""
-    )
+
+    response_text = await call_llm(prompt, ctx)
 
     try:
-        result = json.loads(response.text)
+        result = json.loads(response_text)
         return result.get("results", [])
     except json.JSONDecodeError:
         return []
@@ -78,24 +115,28 @@ async def _build_index(pdf_path: Path, ctx: Context) -> dict:
     # 检查缓存
     cached = load_index(pdf_path)
     if cached and cached.get("file_hash") == current_hash:
-        await ctx.info(f"使用缓存索引: {pdf_path.name}")
+        if ctx:
+            await ctx.info(f"使用缓存索引: {pdf_path.name}")
         return cached
 
     # 开始索引
-    await ctx.info(f"开始索引 {pdf_path.name}...")
+    if ctx:
+        await ctx.info(f"开始索引 {pdf_path.name}...")
 
     total_pages = get_total_pages(pdf_path)
     pages_data = []
 
     for page_num in range(total_pages):
-        await ctx.report_progress(progress=page_num, total=total_pages)
+        if ctx:
+            await ctx.report_progress(progress=page_num, total=total_pages)
 
         try:
-            page_text = extract_page_text(pdf_path, page_num)
+            page_text = await extract_page_text(pdf_path, page_num)
             page_result = await summarize_text(page_text, page_num + 1, ctx)
             pages_data.append(page_result)
         except Exception as e:
-            await ctx.warning(f"第 {page_num + 1} 页处理失败: {e}")
+            if ctx:
+                await ctx.warning(f"第 {page_num + 1} 页处理失败: {e}")
             pages_data.append(
                 {
                     "page": page_num + 1,
@@ -105,7 +146,8 @@ async def _build_index(pdf_path: Path, ctx: Context) -> dict:
                 }
             )
 
-    await ctx.report_progress(progress=total_pages, total=total_pages)
+    if ctx:
+        await ctx.report_progress(progress=total_pages, total=total_pages)
 
     # 保存索引
     index_data = {
@@ -117,7 +159,8 @@ async def _build_index(pdf_path: Path, ctx: Context) -> dict:
     }
 
     save_index(pdf_path, index_data)
-    await ctx.info(f"索引完成: {pdf_path.name}, 共 {total_pages} 页")
+    if ctx:
+        await ctx.info(f"索引完成: {pdf_path.name}, 共 {total_pages} 页")
     return index_data
 
 
@@ -155,7 +198,8 @@ async def get_index(
 
     # 如果有查询，执行 LLM 语义搜索
     if query:
-        await ctx.info(f"搜索: {query}")
+        if ctx:
+            await ctx.info(f"搜索: {query}")
         search_results = await search_with_llm(query, index_data["pages"], ctx, top_k)
 
         return {
